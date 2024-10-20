@@ -18,7 +18,7 @@ import ScrollableChat from "./ScrollableChat";
 import Lottie from "react-lottie";
 import animationData from "../animations/typing.json";
 
-import io from "socket.io-client";
+// import io from "socket.io-client";
 import { ChatState } from "../Context/ChatProvider";
 const ENDPOINT = "http://localhost:8080"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
 var socket, selectedChatCompare;
@@ -27,13 +27,16 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  const [aiConversePrompt, setAiConversePrompt] = useState(
+    "Act as a easy to get female match in a dating site and reply accordingly. You can also choose not to reply to text"
+  );
   const [suggestChatPrompt, setSuggestChatPrompt] = useState(
     "As a dating coach, suggest a next possible intersting chat, between the user and their match. give me a crisp intersting chat as response only."
   );
   const [analyzeChatPrompt, setAnalyzeChatPrompt] = useState(
     "As a dating coach, analyze the following conversation between the user and their match. Identify strengths, weaknesses, and provide suggestions for improvement in very brief."
   );
-  const [socketConnected, setSocketConnected] = useState(false);
+  // const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
   const toast = useToast();
@@ -68,7 +71,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       setMessages(data);
       setLoading(false);
 
-      socket.emit("join chat", selectedChat._id);
+      // socket.emit("join chat", selectedChat._id);
     } catch (error) {
       toast({
         title: "Error Occured!",
@@ -148,7 +151,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {
-      socket.emit("stop typing", selectedChat._id);
+      // socket.emit("stop typing", selectedChat._id);
       try {
         const config = {
           headers: {
@@ -157,16 +160,16 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           },
         };
         setNewMessage("");
-        const { data } = await axios.post(
+        const { message, newAiReply } = await axios.post(
           "/api/message",
           {
             content: newMessage,
             chatId: selectedChat,
+            aiPrompt: aiConversePrompt,
           },
           config
         );
-        socket.emit("new message", data);
-        setMessages([...messages, data]);
+        fetchMessages();
       } catch (error) {
         toast({
           title: "Error Occured!",
@@ -180,15 +183,15 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     }
   };
 
-  useEffect(() => {
-    socket = io(ENDPOINT);
-    socket.emit("setup", user);
-    socket.on("connected", () => setSocketConnected(true));
-    socket.on("typing", () => setIsTyping(true));
-    socket.on("stop typing", () => setIsTyping(false));
+  // useEffect(() => {
+  //   socket = io(ENDPOINT);
+  //   socket.emit("setup", user);
+  //   socket.on("connected", () => setSocketConnected(true));
+  //   socket.on("typing", () => setIsTyping(true));
+  //   socket.on("stop typing", () => setIsTyping(false));
 
-    // eslint-disable-next-line
-  }, []);
+  //   // eslint-disable-next-line
+  // }, []);
 
   useEffect(() => {
     fetchMessages();
@@ -197,21 +200,25 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     // eslint-disable-next-line
   }, [selectedChat]);
 
-  useEffect(() => {
-    socket.on("message recieved", (newMessageRecieved) => {
-      if (
-        !selectedChatCompare || // if chat is not selected or doesn't match current chat
-        selectedChatCompare._id !== newMessageRecieved.chat._id
-      ) {
-        if (!notification.includes(newMessageRecieved)) {
-          setNotification([newMessageRecieved, ...notification]);
-          setFetchAgain(!fetchAgain);
-        }
-      } else {
-        setMessages([...messages, newMessageRecieved]);
-      }
-    });
-  });
+  // useEffect(() => {
+  //   socket.on("message recieved", (newMessageRecieved) => {
+  //     if (
+  //       !selectedChatCompare || // if chat is not selected or doesn't match current chat
+  //       selectedChatCompare._id !== newMessageRecieved.chat._id
+  //     ) {
+  //       if (!notification.includes(newMessageRecieved)) {
+  //         setNotification([newMessageRecieved, ...notification]);
+  //         setFetchAgain(!fetchAgain);
+  //       }
+  //     } else {
+  //       setMessages([...messages, newMessageRecieved]);
+  //     }
+  //   });
+  // });
+
+  const handleAiConversePromptChange = (e) => {
+    setAiConversePrompt(e.target.value);
+  };
 
   const handleSuggestionPromptChange = (e) => {
     setSuggestChatPrompt(e.target.value);
@@ -224,11 +231,11 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const typingHandler = (e) => {
     setNewMessage(e.target.value);
 
-    if (!socketConnected) return;
+    // if (!socketConnected) return;
 
     if (!typing) {
       setTyping(true);
-      socket.emit("typing", selectedChat._id);
+      // socket.emit("typing", selectedChat._id);
     }
     let lastTypingTime = new Date().getTime();
     var timerLength = 3000;
@@ -236,7 +243,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
       var timeNow = new Date().getTime();
       var timeDiff = timeNow - lastTypingTime;
       if (timeDiff >= timerLength && typing) {
-        socket.emit("stop typing", selectedChat._id);
+        // socket.emit("stop typing", selectedChat._id);
         setTyping(false);
       }
     }, timerLength);
@@ -329,6 +336,23 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 placeholder="Enter a message.."
                 value={newMessage}
                 onChange={typingHandler}
+              />
+            </FormControl>
+
+            <FormControl
+              id="chat-suggestion"
+              mt={3}
+              isRequired
+              display="flex"
+              alignItems="center"
+            >
+              <Input
+                variant="filled"
+                bg="#E0E0E0"
+                value={aiConversePrompt}
+                onChange={handleAiConversePromptChange}
+                flex="1" // Make input take remaining width
+                mr={2} // Add some margin between the input and button
               />
             </FormControl>
 

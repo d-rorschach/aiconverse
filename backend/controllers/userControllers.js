@@ -23,7 +23,7 @@ const allUsers = asyncHandler(async (req, res) => {
 //@route           POST /api/user/
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, pic } = req.body;
+  const { name, email, isMale, password, pic } = req.body;
 
   if (!name || !email || !password) {
     res.status(400);

@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Chat = require("../models/chatModel");
 const User = require("../models/userModel");
+const { accessChatService } = require("../services/chatServices");
 
 //@description     Create or fetch One to One Chat
 //@route           POST /api/chat/
@@ -56,6 +57,51 @@ const accessChat = asyncHandler(async (req, res) => {
 //@access          Protected
 const fetchChats = asyncHandler(async (req, res) => {
   try {
+    const easyChat = await Chat.find({
+      $and: [
+        { users: { $elemMatch: { $eq: req.user._id } } },
+        { users: { $elemMatch: { $eq: "671398fd070bb3360a51b1a5" } } },
+      ],
+    });
+
+    if (easyChat.length == 0) {
+      console.log("creating new easy chat");
+      result = await accessChatService(
+        req.user._id,
+        "671398fd070bb3360a51b1a5"
+      );
+    }
+
+    const mediumChat = await Chat.find({
+      $and: [
+        { users: { $elemMatch: { $eq: req.user._id } } },
+        { users: { $elemMatch: { $eq: "67139931070bb3360a51b1a6" } } },
+      ],
+    });
+
+    if (mediumChat.length == 0) {
+      console.log("creating new medium chat");
+      result = await accessChatService(
+        req.user._id,
+        "67139931070bb3360a51b1a6"
+      );
+    }
+
+    const hardChat = await Chat.find({
+      $and: [
+        { users: { $elemMatch: { $eq: req.user._id } } },
+        { users: { $elemMatch: { $eq: "67139948070bb3360a51b1a7" } } },
+      ],
+    });
+
+    if (hardChat.length == 0) {
+      console.log("creating new hard chat");
+      result = await accessChatService(
+        req.user._id,
+        "67139948070bb3360a51b1a7"
+      );
+    }
+
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
       .populate("users", "-password")
       .populate("groupAdmin", "-password")
