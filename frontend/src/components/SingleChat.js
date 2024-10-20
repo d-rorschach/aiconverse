@@ -28,7 +28,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [aiConversePrompt, setAiConversePrompt] = useState(
-    "Act as a easy to get female match in a dating site and reply accordingly. You can also choose not to reply to text"
+    "Act as a flirty female"
   );
   const [suggestChatPrompt, setSuggestChatPrompt] = useState(
     "As a dating coach, suggest a next possible intersting chat, between the user and their match. give me a crisp intersting chat as response only."
@@ -150,9 +150,10 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
   };
 
   const sendMessage = async (event) => {
-    if (event.key === "Enter" && newMessage) {
+    if (newMessage) {
       // socket.emit("stop typing", selectedChat._id);
       try {
+        event.preventDefault();
         const config = {
           headers: {
             "Content-type": "application/json",
@@ -312,32 +313,33 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
               </div>
             )}
 
-            <FormControl
-              onKeyDown={sendMessage}
-              id="first-name"
-              isRequired
-              mt={3}
-            >
-              {istyping ? (
-                <div>
-                  <Lottie
-                    options={defaultOptions}
-                    // height={50}
-                    width={70}
-                    style={{ marginBottom: 15, marginLeft: 0 }}
-                  />
-                </div>
-              ) : (
-                <></>
-              )}
-              <Input
-                variant="filled"
-                bg="#E0E0E0"
-                placeholder="Enter a message.."
-                value={newMessage}
-                onChange={typingHandler}
-              />
-            </FormControl>
+            <form onSubmit={sendMessage}>
+              <FormControl display="flex" id="first-name" isRequired mt={3}>
+                {istyping ? (
+                  <div>
+                    <Lottie
+                      options={defaultOptions}
+                      // height={50}
+                      width={70}
+                      style={{ marginBottom: 15, marginLeft: 0 }}
+                    />
+                  </div>
+                ) : (
+                  <></>
+                )}
+                <Input
+                  variant="filled"
+                  bg="#E0E0E0"
+                  placeholder="Enter a message.."
+                  value={newMessage}
+                  onChange={typingHandler}
+                />
+
+                <Button type="submit" mt={0} colorScheme="blue">
+                  ♥️
+                </Button>
+              </FormControl>
+            </form>
 
             <FormControl
               id="chat-suggestion"
